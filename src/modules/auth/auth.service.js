@@ -7,7 +7,7 @@ const { generateOTP } = require('../../utils/otp');
 // ── Helper interno ────────────────────────────────────────────────────────────
 const signToken = (user) =>
   jwt.sign(
-    { id: user.id, numero_documento: user.numero_documento, email: user.email },
+    { id: user.id, rol: user.rol || 'miembro' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -18,6 +18,8 @@ const publicUser = (user) => ({
   apellido:         user.apellido,
   email:            user.email,
   numero_documento: user.numero_documento,
+  rol:              user.rol || 'miembro',
+  telefono:         user.telefono || null,
   avatar:           user.avatar || null,
 });
 
@@ -43,7 +45,7 @@ exports.login = async ({ numero_documento, password }) => {
 };
 
 // ── Register ──────────────────────────────────────────────────────────────────
-exports.register = async ({ numero_documento, nombre, apellido, email, password }) => {
+exports.register = async ({ numero_documento, nombre, apellido, email, password, telefono }) => {
   const [existing] = await db.query(
     'SELECT id FROM users WHERE numero_documento = ? OR email = ? LIMIT 1',
     [numero_documento, email]
@@ -55,10 +57,14 @@ exports.register = async ({ numero_documento, nombre, apellido, email, password 
 
   const hashed = bcrypt.hashSync(password, 10);
 
+  // El primer usuario en registrarse es admin automáticamente
+  const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM users');
+  const rol = total === 0 ? 'admin' : 'miembro';
+
   const [result] = await db.query(
-    `INSERT INTO users (numero_documento, nombre, apellido, email, password, activo, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, TRUE, NOW(), NOW())`,
-    [numero_documento, nombre, apellido, email, hashed]
+    `INSERT INTO users (numero_documento, nombre, apellido, email, password, telefono, rol, activo, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, NOW(), NOW())`,
+    [numero_documento, nombre, apellido, email, hashed, telefono || null, rol]
   );
 
   const userId = result.insertId;

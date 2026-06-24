@@ -1,7 +1,7 @@
 const router    = require('express').Router();
 const { body }  = require('express-validator');
 const controller = require('./auth.controller');
-const authMiddleware = require('../../middlewares/auth.middleware');
+const { requireAuth } = require('../../middlewares/auth.middleware');
 const validate       = require('../../middlewares/validate.middleware');
 
 // POST /api/auth/login
@@ -70,6 +70,6 @@ router.post('/reset-password',
 );
 
 // POST /api/auth/logout  (requiere token)
-router.post('/logout', authMiddleware, controller.logout);
+router.post('/logout', requireAuth, controller.logout);
 
 module.exports = router;

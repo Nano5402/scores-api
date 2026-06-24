@@ -1,7 +1,6 @@
 const favoritesService   = require('./favorites.service');
 const { success, error } = require('../../utils/response');
 
-// GET /api/favorites — todos los favoritos del usuario autenticado
 exports.getAll = async (req, res) => {
   try {
     const data = await favoritesService.getAll(req.user.id);
@@ -11,7 +10,6 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// POST /api/favorites — agregar favorito { tipo, referencia_id }
 exports.add = async (req, res) => {
   try {
     const { tipo, referencia_id } = req.body;
@@ -20,7 +18,7 @@ exports.add = async (req, res) => {
       return error(res, 'tipo y referencia_id son requeridos', 400);
     }
 
-    const tiposValidos = ['player', 'team', 'match', 'tournament'];
+    const tiposValidos = ['jugador', 'equipo', 'partido', 'torneo'];
     if (!tiposValidos.includes(tipo)) {
       return error(res, `tipo debe ser uno de: ${tiposValidos.join(', ')}`, 400);
     }
@@ -32,7 +30,6 @@ exports.add = async (req, res) => {
   }
 };
 
-// DELETE /api/favorites/:tipo/:referencia_id — eliminar favorito
 exports.remove = async (req, res) => {
   try {
     const { tipo, referencia_id } = req.params;

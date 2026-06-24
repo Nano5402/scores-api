@@ -5,7 +5,7 @@ const { error } = require('../utils/response');
  * Middleware que verifica el Bearer token JWT en el header Authorization.
  * Si es válido, adjunta el payload decodificado a req.user.
  */
-module.exports = (req, res, next) => {
+exports.requireAuth = (req, res, next) => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,4 +24,15 @@ module.exports = (req, res, next) => {
     }
     return error(res, 'Token inválido', 401);
   }
+};
+
+/**
+ * Middleware que verifica que el usuario autenticado tenga rol 'admin'.
+ * Debe usarse DESPUÉS de requireAuth.
+ */
+exports.requireAdmin = (req, res, next) => {
+  if (req.user.rol !== 'admin') {
+    return error(res, 'Acceso restringido a administradores', 403);
+  }
+  next();
 };
