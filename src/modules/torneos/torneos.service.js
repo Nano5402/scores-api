@@ -14,7 +14,6 @@ exports.getAll = async ({ deporte, estado }) => {
       t.fecha_inicio,
       t.fecha_fin,
       t.estado,
-      t.imagen_url,
       cat.id     AS categoria_id,
       cat.nombre AS categoria_nombre,
       s.id       AS sede_id,
@@ -58,7 +57,6 @@ exports.getById = async (id) => {
       t.fecha_inicio,
       t.fecha_fin,
       t.estado,
-      t.imagen_url,
       cat.id     AS categoria_id,
       cat.nombre AS categoria_nombre,
       s.id       AS sede_id,
@@ -75,9 +73,9 @@ exports.getById = async (id) => {
     throw { status: 404, message: 'Torneo no encontrado' };
   }
 
-  // Contar inscripciones aprobadas
+  // Contar inscripciones confirmadas
   const [countRows] = await db.query(
-    `SELECT COUNT(*) AS inscritos FROM inscripciones WHERE torneo_id = ? AND estado = 'aprobada'`,
+    `SELECT COUNT(*) AS inscritos FROM inscripciones WHERE torneo_id = ? AND estado = 'confirmado'`,
     [id]
   );
 
@@ -98,10 +96,10 @@ exports.create = async (body) => {
        (nombre, deporte, categoria_id, sede_id, formato, descripcion, premio, cupo_max, fecha_inicio, fecha_fin, estado)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      nombre, deporte, categoria_id, sede_id,
+      nombre, deporte, categoria_id || null, sede_id || null,
       formato || null, descripcion || null, premio || null,
       cupo_max || null, fecha_inicio || null, fecha_fin || null,
-      estado || 'borrador'
+      estado || 'proximo'
     ]
   );
 
@@ -124,13 +122,13 @@ exports.update = async (id, body) => {
     `UPDATE torneos
      SET nombre = ?, deporte = ?, categoria_id = ?, sede_id = ?, formato = ?,
          descripcion = ?, premio = ?, cupo_max = ?, fecha_inicio = ?, fecha_fin = ?,
-         estado = ?, updated_at = NOW()
+         estado = ?
      WHERE id = ?`,
     [
-      nombre, deporte, categoria_id, sede_id,
+      nombre, deporte, categoria_id || null, sede_id || null,
       formato || null, descripcion || null, premio || null,
       cupo_max || null, fecha_inicio || null, fecha_fin || null,
-      estado || 'borrador', id
+      estado || 'proximo', id
     ]
   );
 
@@ -152,18 +150,17 @@ exports.remove = async (id) => {
 // ── Formateadores ───────────────────────────────────────────────────────────────
 function formatListItem(row) {
   return {
-    id:                    row.id,
-    nombre:                row.nombre,
-    deporte:               row.deporte,
-    formato:               row.formato || null,
-    descripcion:           row.descripcion || null,
-    premio:                row.premio || null,
-    cupo_max:              row.cupo_max || null,
-    fecha_inicio:          row.fecha_inicio || null,
-    fecha_fin:             row.fecha_fin || null,
-    estado:                row.estado,
-    imagen_url:            row.imagen_url || null,
-    inscripciones_abiertas: row.estado === 'abierto',
+    id:                     row.id,
+    nombre:                 row.nombre,
+    deporte:                row.deporte,
+    formato:                row.formato || null,
+    descripcion:            row.descripcion || null,
+    premio:                 row.premio || null,
+    cupo_max:               row.cupo_max || null,
+    fecha_inicio:           row.fecha_inicio || null,
+    fecha_fin:              row.fecha_fin || null,
+    estado:                 row.estado,
+    inscripciones_abiertas: row.estado === 'proximo' || row.estado === 'en_curso',
     categoria: {
       id:     row.categoria_id,
       nombre: row.categoria_nombre,
@@ -177,19 +174,18 @@ function formatListItem(row) {
 
 function formatDetail(row, inscritos) {
   return {
-    id:                    row.id,
-    nombre:                row.nombre,
-    deporte:               row.deporte,
-    formato:               row.formato || null,
-    descripcion:           row.descripcion || null,
-    premio:                row.premio || null,
-    cupo_max:              row.cupo_max || null,
-    inscritos:             inscritos,
-    inscripciones_abiertas: row.estado === 'abierto',
-    fecha_inicio:          row.fecha_inicio || null,
-    fecha_fin:             row.fecha_fin || null,
-    estado:                row.estado,
-    imagen_url:            row.imagen_url || null,
+    id:                     row.id,
+    nombre:                 row.nombre,
+    deporte:                row.deporte,
+    formato:                row.formato || null,
+    descripcion:            row.descripcion || null,
+    premio:                 row.premio || null,
+    cupo_max:               row.cupo_max || null,
+    inscritos:              inscritos,
+    inscripciones_abiertas: row.estado === 'proximo' || row.estado === 'en_curso',
+    fecha_inicio:           row.fecha_inicio || null,
+    fecha_fin:              row.fecha_fin || null,
+    estado:                 row.estado,
     categoria: {
       id:     row.categoria_id,
       nombre: row.categoria_nombre,

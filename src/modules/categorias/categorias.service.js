@@ -14,3 +14,35 @@ exports.getById = async (id) => {
   if (!rows.length) throw { status: 404, message: 'Categoría no encontrada' };
   return rows[0];
 };
+
+exports.create = async ({ nombre, deporte, orden }) => {
+  if (!nombre) throw { status: 400, message: 'El nombre de la categoría es requerido' };
+
+  const [result] = await db.query(
+    'INSERT INTO categorias (nombre, deporte, orden) VALUES (?, ?, ?)',
+    [nombre, deporte || 'ambos', orden || 1]
+  );
+
+  return exports.getById(result.insertId);
+};
+
+exports.update = async (id, { nombre, deporte, orden }) => {
+  const [existing] = await db.query('SELECT id FROM categorias WHERE id = ?', [id]);
+  if (!existing.length) throw { status: 404, message: 'Categoría no encontrada' };
+  if (!nombre) throw { status: 400, message: 'El nombre de la categoría es requerido' };
+
+  await db.query(
+    'UPDATE categorias SET nombre = ?, deporte = ?, orden = ? WHERE id = ?',
+    [nombre, deporte || 'ambos', orden || 1, id]
+  );
+
+  return exports.getById(id);
+};
+
+exports.remove = async (id) => {
+  const [existing] = await db.query('SELECT id FROM categorias WHERE id = ?', [id]);
+  if (!existing.length) throw { status: 404, message: 'Categoría no encontrada' };
+
+  await db.query('DELETE FROM categorias WHERE id = ?', [id]);
+  return { message: 'Categoría eliminada correctamente' };
+};

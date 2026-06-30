@@ -13,6 +13,7 @@ const favoritosRoutes  = require('./src/modules/favorites/favorites.routes');
 const categoriasRoutes = require('./src/modules/categorias/categorias.routes');
 const sedesRoutes      = require('./src/modules/sedes/sedes.routes');
 const posicionesRoutes = require('./src/modules/posiciones/posiciones.routes');
+const usersRoutes       = require('./src/modules/users/users.routes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/favoritos',  favoritosRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/sedes',      sedesRoutes);
 app.use('/api/posiciones', posicionesRoutes);
+app.use('/api/users',      usersRoutes);
 
 // ── Health check ───────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
@@ -56,4 +58,4 @@ app.use((err, _req, res, _next) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅  ScoreApp API en http://localhost:${PORT}`);
-});
+}); 

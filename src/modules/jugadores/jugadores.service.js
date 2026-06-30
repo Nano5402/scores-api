@@ -12,7 +12,7 @@ exports.getAll = async ({ deporte, categoria_id, activo }) => {
       j.mano,
       j.activo,
       c.code   AS country_code,
-      c.nombre AS country_name,
+      c.name AS country_name,
       c.flag   AS country_flag,
       cat.id     AS categoria_id,
       cat.nombre AS categoria_nombre
@@ -60,7 +60,7 @@ exports.getById = async (id) => {
       j.foto,
       j.activo,
       c.code   AS country_code,
-      c.nombre AS country_name,
+      c.name AS country_name,
       c.flag   AS country_flag,
       cat.id     AS categoria_id,
       cat.nombre AS categoria_nombre,
