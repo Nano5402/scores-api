@@ -1,11 +1,25 @@
-const router         = require('express').Router();
-const controller     = require('./matches.controller');
-const authMiddleware = require('../../middlewares/auth.middleware');
+const router = require('express').Router()
+const controller = require('./matches.controller')
+const { requireAuth } = require('../../middlewares/auth.middleware')
 
-// GET /api/matches?estado=live&deporte=tenis&torneo_id=1
-router.get('/',    authMiddleware, controller.getAll);
+const requireAdmin = (req, res, next) => {
+  if (req.user?.rol !== 'admin') {
+    return res.status(403).json({ ok: false, message: 'Acceso restringido a administradores' })
+  }
+  next()
+}
 
-// GET /api/matches/:id
-router.get('/:id', authMiddleware, controller.getById);
+// GET  /api/partidos?estado=en_vivo&deporte=tenis&torneo_id=1
+router.get('/', requireAuth, controller.getAll)
+// GET  /api/partidos/:id
+router.get('/:id', requireAuth, controller.getById)
+// POST /api/partidos
+router.post('/', requireAuth, requireAdmin, controller.create)
+// PUT  /api/partidos/:id
+router.put('/:id', requireAuth, requireAdmin, controller.update)
+// PUT  /api/partidos/:id/marcador  — actualizar sets en vivo
+router.put('/:id/marcador', requireAuth, requireAdmin, controller.updateMarcador)
+// DELETE /api/partidos/:id
+router.delete('/:id', requireAuth, requireAdmin, controller.remove)
 
-module.exports = router;
+module.exports = router

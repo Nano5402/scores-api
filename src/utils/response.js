@@ -4,8 +4,7 @@
  * @param {*} data
  * @param {number} status
  */
-exports.success = (res, data, status = 200) =>
-  res.status(status).json({ ok: true, data });
+exports.success = (res, data, status = 200) => res.status(status).json({ ok: true, data })
 
 /**
  * Envía una respuesta de error estandarizada.
@@ -13,5 +12,4 @@ exports.success = (res, data, status = 200) =>
  * @param {string} message
  * @param {number} status
  */
-exports.error = (res, message, status = 400) =>
-  res.status(status).json({ ok: false, message });
+exports.error = (res, message, status = 400) => res.status(status).json({ ok: false, message })
