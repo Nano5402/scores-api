@@ -1,4 +1,4 @@
-const db = require('../../config/db');
+const db = require('../../config/db')
 
 // ── Listar partidos ─────────────────────────────────────────────────────────────
 exports.getAll = async ({ estado, deporte, torneo_id }) => {
@@ -51,28 +51,28 @@ exports.getAll = async ({ estado, deporte, torneo_id }) => {
     LEFT JOIN equipos_padel e1 ON e1.id = p.equipo1_id
     LEFT JOIN equipos_padel e2 ON e2.id = p.equipo2_id
     WHERE 1 = 1
-  `;
+  `
 
-  const params = [];
+  const params = []
 
   if (estado) {
-    query += ' AND p.estado = ?';
-    params.push(estado);
+    query += ' AND p.estado = ?'
+    params.push(estado)
   }
   if (deporte) {
-    query += ' AND p.deporte = ?';
-    params.push(deporte);
+    query += ' AND p.deporte = ?'
+    params.push(deporte)
   }
   if (torneo_id) {
-    query += ' AND p.torneo_id = ?';
-    params.push(torneo_id);
+    query += ' AND p.torneo_id = ?'
+    params.push(torneo_id)
   }
 
-  query += ' ORDER BY p.fecha_inicio DESC';
+  query += ' ORDER BY p.fecha_inicio DESC'
 
-  const [rows] = await db.query(query, params);
-  return rows.map(formatSummary);
-};
+  const [rows] = await db.query(query, params)
+  return rows.map(formatSummary)
+}
 
 // ── Obtener por ID ──────────────────────────────────────────────────────────────
 exports.getById = async (id) => {
@@ -119,9 +119,9 @@ exports.getById = async (id) => {
     WHERE p.id = ?
     LIMIT 1`,
     [id]
-  );
+  )
 
-  if (!rows.length) throw { status: 404, message: 'Partido no encontrado' };
+  if (!rows.length) throw { status: 404, message: 'Partido no encontrado' }
 
   const [sets] = await db.query(
     `SELECT numero_set, games_j1, games_j2, tiebreak_j1, tiebreak_j2, completado
@@ -129,18 +129,26 @@ exports.getById = async (id) => {
      WHERE partido_id = ?
      ORDER BY numero_set ASC`,
     [id]
-  );
+  )
 
-  return formatDetail(rows[0], sets);
-};
+  return formatDetail(rows[0], sets)
+}
 
 // ── Crear partido ───────────────────────────────────────────────────────────────
 exports.create = async (body, created_by) => {
   const {
-    torneo_id, cancha_id, ronda, deporte,
-    jugador1_id, jugador2_id, equipo1_id, equipo2_id,
-    estado, fecha_inicio, notas,
-  } = body;
+    torneo_id,
+    cancha_id,
+    ronda,
+    deporte,
+    jugador1_id,
+    jugador2_id,
+    equipo1_id,
+    equipo2_id,
+    estado,
+    fecha_inicio,
+    notas,
+  } = body
 
   const [result] = await db.query(
     `INSERT INTO partidos
@@ -148,26 +156,44 @@ exports.create = async (body, created_by) => {
         equipo1_id, equipo2_id, estado, fecha_inicio, notas, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      torneo_id || null, cancha_id || null, ronda || null, deporte,
-      jugador1_id || null, jugador2_id || null,
-      equipo1_id  || null, equipo2_id  || null,
-      estado || 'programado', fecha_inicio || null, notas || null, created_by,
+      torneo_id || null,
+      cancha_id || null,
+      ronda || null,
+      deporte,
+      jugador1_id || null,
+      jugador2_id || null,
+      equipo1_id || null,
+      equipo2_id || null,
+      estado || 'programado',
+      fecha_inicio || null,
+      notas || null,
+      created_by,
     ]
-  );
+  )
 
-  return exports.getById(result.insertId);
-};
+  return exports.getById(result.insertId)
+}
 
 // ── Actualizar partido ──────────────────────────────────────────────────────────
 exports.update = async (id, body) => {
-  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id]);
-  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' };
+  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id])
+  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' }
 
   const {
-    torneo_id, cancha_id, ronda, deporte,
-    jugador1_id, jugador2_id, equipo1_id, equipo2_id,
-    estado, ganador, duracion_min, fecha_inicio, notas,
-  } = body;
+    torneo_id,
+    cancha_id,
+    ronda,
+    deporte,
+    jugador1_id,
+    jugador2_id,
+    equipo1_id,
+    equipo2_id,
+    estado,
+    ganador,
+    duracion_min,
+    fecha_inicio,
+    notas,
+  } = body
 
   await db.query(
     `UPDATE partidos
@@ -176,27 +202,37 @@ exports.update = async (id, body) => {
          estado = ?, ganador = ?, duracion_min = ?, fecha_inicio = ?, notas = ?
      WHERE id = ?`,
     [
-      torneo_id || null, cancha_id || null, ronda || null, deporte,
-      jugador1_id || null, jugador2_id || null,
-      equipo1_id  || null, equipo2_id  || null,
-      estado, ganador || null, duracion_min || null, fecha_inicio || null,
-      notas || null, id,
+      torneo_id || null,
+      cancha_id || null,
+      ronda || null,
+      deporte,
+      jugador1_id || null,
+      jugador2_id || null,
+      equipo1_id || null,
+      equipo2_id || null,
+      estado,
+      ganador || null,
+      duracion_min || null,
+      fecha_inicio || null,
+      notas || null,
+      id,
     ]
-  );
+  )
 
-  return exports.getById(id);
-};
+  return exports.getById(id)
+}
 
 // ── Actualizar marcador en tiempo real ──────────────────────────────────────────
 exports.updateMarcador = async (id, { sets, estado, ganador }) => {
-  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id]);
-  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' };
+  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id])
+  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' }
 
   // Actualizar estado y ganador del partido
-  await db.query(
-    'UPDATE partidos SET estado = ?, ganador = ? WHERE id = ?',
-    [estado, ganador || null, id]
-  );
+  await db.query('UPDATE partidos SET estado = ?, ganador = ? WHERE id = ?', [
+    estado,
+    ganador || null,
+    id,
+  ])
 
   // Upsert cada set
   for (const set of sets) {
@@ -210,80 +246,84 @@ exports.updateMarcador = async (id, { sets, estado, ganador }) => {
          tiebreak_j2 = VALUES(tiebreak_j2),
          completado  = VALUES(completado)`,
       [
-        id, set.numero_set, set.games_j1, set.games_j2,
-        set.tiebreak_j1 ?? null, set.tiebreak_j2 ?? null,
+        id,
+        set.numero_set,
+        set.games_j1,
+        set.games_j2,
+        set.tiebreak_j1 ?? null,
+        set.tiebreak_j2 ?? null,
         set.completado ? 1 : 0,
       ]
-    );
+    )
   }
 
-  return exports.getById(id);
-};
+  return exports.getById(id)
+}
 
 // ── Eliminar ────────────────────────────────────────────────────────────────────
 exports.remove = async (id) => {
-  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id]);
-  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' };
+  const [existing] = await db.query('SELECT id FROM partidos WHERE id = ?', [id])
+  if (!existing.length) throw { status: 404, message: 'Partido no encontrado' }
 
-  await db.query('DELETE FROM sets_partido WHERE partido_id = ?', [id]);
-  await db.query('DELETE FROM partidos WHERE id = ?', [id]);
+  await db.query('DELETE FROM sets_partido WHERE partido_id = ?', [id])
+  await db.query('DELETE FROM partidos WHERE id = ?', [id])
 
-  return { message: 'Partido eliminado correctamente' };
-};
+  return { message: 'Partido eliminado correctamente' }
+}
 
 // ── Formateadores ───────────────────────────────────────────────────────────────
 function formatSummary(row) {
   const base = {
-    id:           row.id,
-    deporte:      row.deporte,
-    ronda:        row.ronda,
-    estado:       row.estado,
-    ganador:      row.ganador,
+    id: row.id,
+    deporte: row.deporte,
+    ronda: row.ronda,
+    estado: row.estado,
+    ganador: row.ganador,
     duracion_min: row.duracion_min,
     fecha_inicio: row.fecha_inicio,
     torneo: {
-      id:     row.torneo_id,
+      id: row.torneo_id,
       nombre: row.torneo_nombre,
     },
     cancha: {
       nombre: row.cancha_nombre,
-      sede:   row.sede_nombre,
+      sede: row.sede_nombre,
     },
-  };
-
-  if (row.deporte === 'padel') {
-    base.equipo1 = { id: row.e1_id, nombre: row.e1_nombre };
-    base.equipo2 = { id: row.e2_id, nombre: row.e2_nombre };
-  } else {
-    base.jugador1 = {
-      id:       row.j1_id,
-      nombre:   row.j1_nombre,
-      apellido: row.j1_apellido,
-      flag:     row.j1_flag,
-      ranking:  row.j1_ranking || null,
-    };
-    base.jugador2 = {
-      id:       row.j2_id,
-      nombre:   row.j2_nombre,
-      apellido: row.j2_apellido,
-      flag:     row.j2_flag,
-      ranking:  row.j2_ranking || null,
-    };
   }
 
-  return base;
+  if (row.deporte === 'padel') {
+    base.equipo1 = { id: row.e1_id, nombre: row.e1_nombre }
+    base.equipo2 = { id: row.e2_id, nombre: row.e2_nombre }
+  } else {
+    base.jugador1 = {
+      id: row.j1_id,
+      nombre: row.j1_nombre,
+      apellido: row.j1_apellido,
+      flag: row.j1_flag,
+      ranking: row.j1_ranking || null,
+    }
+    base.jugador2 = {
+      id: row.j2_id,
+      nombre: row.j2_nombre,
+      apellido: row.j2_apellido,
+      flag: row.j2_flag,
+      ranking: row.j2_ranking || null,
+    }
+  }
+
+  return base
 }
 
 function formatDetail(row, sets) {
-  const base = formatSummary(row);
-  base.notas = row.notas || null;
-  base.sets  = sets.map((s) => ({
-    numero_set:  s.numero_set,
-    games_j1:    s.games_j1,
-    games_j2:    s.games_j2,
+  const base = formatSummary(row)
+  base.notas = row.notas || null
+  base.sets = sets.map((s) => ({
+    numero_set: s.numero_set,
+    games_j1: s.games_j1,
+    games_j2: s.games_j2,
     tiebreak_j1: s.tiebreak_j1 ?? null,
     tiebreak_j2: s.tiebreak_j2 ?? null,
-    completado:  Boolean(s.completado),
-  }));
-  return base;
+    completado: Boolean(s.completado),
+  }))
+  return base
 }

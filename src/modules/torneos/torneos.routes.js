@@ -1,8 +1,8 @@
-const router = require('express').Router();
-const controller = require('./torneos.controller');
-const { requireAuth, requireAdmin } = require('../../middlewares/auth.middleware');
-const { body } = require('express-validator');
-const validate = require('../../middlewares/validate.middleware');
+const router = require('express').Router()
+const controller = require('./torneos.controller')
+const { requireAuth, requireAdmin } = require('../../middlewares/auth.middleware')
+const { body } = require('express-validator')
+const validate = require('../../middlewares/validate.middleware')
 
 // ── Validaciones ────────────────────────────────────────────────────────────────
 const torneoRules = [
@@ -20,15 +20,15 @@ const torneoRules = [
     .optional()
     .isIn(['proximo', 'en_curso', 'finalizado', 'cancelado'])
     .withMessage('Estado inválido. Valores: proximo, en_curso, finalizado, cancelado'),
-];
+]
 
 // ── Rutas públicas (auth) ───────────────────────────────────────────────────────
-router.get('/', requireAuth, controller.getAll);
-router.get('/:id', requireAuth, controller.getById);
+router.get('/', requireAuth, controller.getAll)
+router.get('/:id', requireAuth, controller.getById)
 
 // ── Rutas admin ─────────────────────────────────────────────────────────────────
-router.post('/', requireAuth, requireAdmin, torneoRules, validate, controller.create);
-router.put('/:id', requireAuth, requireAdmin, torneoRules, validate, controller.update);
-router.delete('/:id', requireAuth, requireAdmin, controller.remove);
+router.post('/', requireAuth, requireAdmin, torneoRules, validate, controller.create)
+router.put('/:id', requireAuth, requireAdmin, torneoRules, validate, controller.update)
+router.delete('/:id', requireAuth, requireAdmin, controller.remove)
 
-module.exports = router;
+module.exports = router
